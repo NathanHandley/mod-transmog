@@ -205,7 +205,7 @@ Transmogrification.AllowEpic = 1
 Transmogrification.AllowLegendary = 1
 Transmogrification.AllowArtifact = 1
 Transmogrification.AllowHeirloom = 1
-Transmogrification.AllowTradeable = 0
+Transmogrification.AllowTradeable = 1
 
 Transmogrification.AllowMixedArmorTypes = 1
 Transmogrification.AllowMixedWeaponTypes = 1
