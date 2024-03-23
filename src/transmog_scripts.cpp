@@ -3,6 +3,8 @@
 Transmogrification 3.3.5a - Gossip menu
 By Rochet2
 
+Updates by Nathan Handley
+
 ScriptName for NPC:
 Creature_Transmogrify
 
@@ -19,6 +21,7 @@ Blizzard might have changed the quality requirements.
 Cant transmogrify rediculus items // Foereaper: would be fun to stab people with a fish
 -- Cant think of any good way to handle this easily, could rip flagged items from cata DB
 */
+#include <boost/algorithm/string.hpp>   
 #include <unordered_map>
 #include "Transmogrification.h"
 #include "ScriptedCreature.h"
@@ -763,8 +766,13 @@ public:
                             continue;
                         if (sT->GetFakeEntry(oldItem->GetGUID()) == newItem->GetEntry())
                             continue;
-                        if (hasSearchString && newItem->GetTemplate()->Name1.find(searchDisplayValue) == std::string::npos)
-                            continue;
+                        if (hasSearchString)
+                        {
+                            std::string itemTemplateNameToLower = boost::algorithm::to_lower_copy(newItem->GetTemplate()->Name1);
+                            std::string searchDisplayValueToLower = boost::algorithm::to_lower_copy(searchDisplayValue);
+                            if (itemTemplateNameToLower.find(searchDisplayValueToLower) == std::string::npos)
+                                continue;
+                        }
                         allowedItems.push_back(newItem);
                     }
                     for (uint32 i = startValue; i <= endValue; i++)
