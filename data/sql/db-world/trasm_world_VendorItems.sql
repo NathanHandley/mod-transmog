@@ -6,9 +6,9 @@ SET
 
 DELETE FROM `item_template` WHERE `entry` = @HideEntry OR `entry` = @RemoveEntry;
 
-INSERT INTO `item_template` (`entry`, `class`, `subclass`, `name`, `displayid`, `InventoryType`, `description`) VALUES
-(@HideEntry,   15, 0, @HideName,   55112, 0, "Hide the item in this slot."),
-(@RemoveEntry, 15, 0, @RemoveName, 8931,  0, "Remove active transmog for this item.");
+INSERT INTO `item_template` (`entry`, `class`, `subclass`, `name`, `displayid`, `InventoryType`, `description`, `holy_res`, `fire_res`, `nature_res`, `frost_res`, `shadow_res`, `arcane_res`) VALUES
+(@HideEntry,   15, 0, @HideName,   55112, 0, "Hide the item in this slot.", 0, 0, 0, 0, 0, 0),
+(@RemoveEntry, 15, 0, @RemoveName, 8931,  0, "Remove active transmog for this item.", 0, 0, 0, 0, 0, 0);
 
 DELETE FROM `item_template_locale` WHERE `ID` = @HideEntry OR `ID` = @RemoveEntry;
 INSERT INTO `item_template_locale` (`ID`, `locale`, `Name`, `Description`) VALUES
