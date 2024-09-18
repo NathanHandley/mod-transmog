@@ -19,6 +19,8 @@
 #define HIDDEN_ITEM_ID 1 // used for hidden transmog - do not use a valid equipment ID
 #define MAX_OPTIONS 25 // do not alter
 #define MAX_SEARCH_STRING_LENGTH 50
+#define MAX_ITEMS_IN_FAKE_VENDOR_WINDOW 149 // Eternal Wrath: Prevents items from not showing up
+#define SENDER_VALUE_FOR_FAKE_VENDOR_SUBLIST 1000
 
 class Item;
 class Player;
@@ -112,12 +114,16 @@ public:
     typedef std::unordered_map<uint32, std::string> searchStringMap;
     typedef std::unordered_map<uint32, std::vector<uint32>> transmogPlusData;
     typedef std::unordered_map<ObjectGuid, uint8> selectedSlotMap;
+    typedef std::unordered_map<ObjectGuid, uint32> fakeVendorStartItemMap; // Eternal Wrath: Used to store what the start item was in the fake vendor
+    typedef std::unordered_map<ObjectGuid, uint8> fakeVendorCurSlotMap; // Eternal Wrath: Used to store which slot was selected for the fake vendor
     
     transmogPlusData plusDataMap;
     transmogMap entryMap; // entryMap[pGUID][iGUID] = entry
     transmogData dataMap; // dataMap[iGUID] = pGUID
     collectionCacheMap collectionCache;
     selectedSlotMap selectionCache;
+    fakeVendorStartItemMap fakeVendorStartItemCache; // Eternal Wrath: Used to store what the start item was in the fake vendor
+    fakeVendorCurSlotMap fakeVendorCurSlotCache; // Eternal Wrath: Used to store which slot was selected for the fake vendor
 
 #ifdef PRESETS
     bool EnableSetInfo;

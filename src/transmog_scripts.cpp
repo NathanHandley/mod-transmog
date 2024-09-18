@@ -374,7 +374,7 @@ bool ValidForTransmog (Player* player, Item* target, Item* source, bool hasSearc
     return true;
 }
 
-// Nathan Handley: Update name
+// Eternal Wrath: Renamed
 bool CompareByQualityAndName (Item* i1, Item* i2)
 {
     const ItemTemplate* i1t = i1->GetTemplate();
@@ -384,7 +384,7 @@ bool CompareByQualityAndName (Item* i1, Item* i2)
     return std::tie(q1, i1t->Name1) < std::tie(q2, i2t->Name1);
 }
 
-// Nathan Handley: Added as default sort
+// Eternal Wrath: Added as default sort
 bool CompareByName(Item* i1, Item* i2)
 {
     const ItemTemplate* i1t = i1->GetTemplate();
@@ -540,7 +540,7 @@ public:
         WorldSession* session = player->GetSession();
         LocaleConstant locale = session->GetSessionDbLocaleIndex();
         // Next page
-        if (sender > EQUIPMENT_SLOT_END + 10)
+        if (sender > EQUIPMENT_SLOT_END + 10 && sender != SENDER_VALUE_FOR_FAKE_VENDOR_SUBLIST)
         {
             ShowTransmogItemsInGossipMenu(player, creature, action, sender);
             return true;
@@ -551,7 +551,25 @@ public:
                 sT->selectionCache[player->GetGUID()] = action;
 
                 if (sT->GetUseVendorInterface())
-                    ShowTransmogItemsInFakeVendor(player, creature, action);
+                {
+                    // Eternal Wrath: If there are too many items to display in a single window, needs to be broken up
+                    Item* targetItem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, action);
+                    if (!targetItem)
+                    {
+                        ChatHandler(player->GetSession()).SendNotification(LANG_ERR_TRANSMOG_MISSING_DEST_ITEM);
+                        CloseGossipMenuFor(player);
+                        return true;
+                    }
+                    ItemTemplate const* targetTemplate = targetItem->GetTemplate();
+                    std::vector<Item*> itemList = GetValidTransmogs(player, targetItem, false, "");
+                    if (itemList.size() > MAX_ITEMS_IN_FAKE_VENDOR_WINDOW)
+                        ShowFakeVendorSubListsInGossipMenu(player, creature, action);
+                    else
+                    {
+                        sT->fakeVendorStartItemCache[player->GetGUID()] = 0;
+                        ShowTransmogItemsInFakeVendor(player, creature, action, sT->fakeVendorStartItemCache[player->GetGUID()]);
+                    }
+                }
                 else
                     ShowTransmogItemsInGossipMenu(player, creature, action, sender);
                 break;
@@ -695,6 +713,14 @@ public:
                 AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, "|TInterface/ICONS/Ability_Spy:30:30:-18:0|t" + GetLocaleText(locale, "back"), EQUIPMENT_SLOT_END + 1, 0);
                 SendGossipMenuFor(player, sT->GetTransmogNpcText(), creature->GetGUID());
             } break;
+            case SENDER_VALUE_FOR_FAKE_VENDOR_SUBLIST: // Fake Vendor Sublist
+            {
+                // Eternal Wrath: Handle the fake vendor selection sublist
+                uint32 startItemIndex = action * MAX_ITEMS_IN_FAKE_VENDOR_WINDOW;
+                sT->fakeVendorStartItemCache[player->GetGUID()] = startItemIndex;
+                uint8 slot = sT->fakeVendorCurSlotCache[player->GetGUID()];
+                ShowTransmogItemsInFakeVendor(player, creature, slot, startItemIndex);
+            } break;
             default: // Transmogrify
             {
                 if (!sender && !action)
@@ -792,6 +818,38 @@ public:
         return true;
     }
 #endif
+
+    // Eternal Wrath: If there was too many items to display, then a list of vendor windows shows up
+    void ShowFakeVendorSubListsInGossipMenu(Player* player, Creature* creature, uint8 slot)
+    {
+        WorldSession* session = player->GetSession();
+        LocaleConstant locale = session->GetSessionDbLocaleIndex();
+        Item* targetItem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, slot);
+        if (targetItem)
+        {
+            // Get the list of items
+            ItemTemplate const* targetTemplate = targetItem->GetTemplate();
+            std::vector<Item*> itemList = GetValidTransmogs(player, targetItem, false, "");
+
+            // Grab this slot icon
+            std::string icon = sT->GetSlotIcon(slot, 30, 30, -18, 0);
+            std::string slotName = sT->GetSlotName(slot, session);
+
+            // Create a gossip page for each group of items
+            uint8 listSlotCount = 0;
+            for (int i = 0; i < itemList.size(); i+=MAX_ITEMS_IN_FAKE_VENDOR_WINDOW)
+            {
+                // Build the item to show what item it will start on
+                Item* curStartItem = itemList.at(i);
+                std::string gossipText = icon + slotName + " (" + curStartItem->GetTemplate()->Name1 + "+...)";
+                AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, gossipText, SENDER_VALUE_FOR_FAKE_VENDOR_SUBLIST, listSlotCount);
+                listSlotCount++;
+            }
+        }
+        sT->fakeVendorCurSlotCache[player->GetGUID()] = slot;
+        AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, "|TInterface/ICONS/Ability_Spy:30:30:-18:0|t" + GetLocaleText(locale, "back"), EQUIPMENT_SLOT_END + 1, 0);
+        SendGossipMenuFor(player, DEFAULT_GOSSIP_MESSAGE, creature->GetGUID());
+    }
 
     void ShowTransmogItemsInGossipMenu(Player* player, Creature* creature, uint8 slot, uint16 gossipPageNumber) // Only checks bags while can use an item from anywhere in inventory
     {
@@ -952,7 +1010,8 @@ public:
     }
 
     //The actual vendor options are handled in the player script below, OnBeforeBuyItemFromVendor
-    static void ShowTransmogItemsInFakeVendor (Player* player, Creature* creature, uint8 slot)
+    // Eternal Wrath: Added "startItemID" for overflow lists containing > MAX_ITEMS_IN_FAKE_VENDOR_WINDOW items
+    static void ShowTransmogItemsInFakeVendor (Player* player, Creature* creature, uint8 slot, uint32 startItemIndex)
     {
         Item* targetItem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, slot);
         if (!targetItem)
@@ -963,10 +1022,16 @@ public:
         }
         ItemTemplate const* targetTemplate = targetItem->GetTemplate();
 
-        std::vector<Item*> itemList = GetValidTransmogs(player, targetItem, false, "");
+        std::vector<Item*> initialItemList = GetValidTransmogs(player, targetItem, false, "");
+        std::vector<Item*> displayItemList;
+        for (int i = 0; i < initialItemList.size(); ++i)
+        {
+            if (i >= startItemIndex)
+                displayItemList.push_back(initialItemList.at(i));
+        }
         std::vector<ItemTemplate const*> spoofedItems = GetSpoofedVendorItems(targetItem);
 
-        uint32 itemCount = itemList.size();
+        uint32 itemCount = displayItemList.size();
         uint32 spoofCount = spoofedItems.size();
         uint32 totalItems = itemCount + spoofCount;
         uint32 price = GetTransmogPrice(targetItem->GetTemplate());
@@ -987,7 +1052,7 @@ public:
         }
         for (uint32 i = 0; i < itemCount && count < MAX_VENDOR_ITEMS; ++i)
         {
-            ItemTemplate const* _proto = itemList[i]->GetTemplate();
+            ItemTemplate const* _proto = displayItemList[i]->GetTemplate();
             if (_proto) EncodeItemToPacket(data, _proto, count, price);
         }
 
@@ -1003,7 +1068,7 @@ private:
     {
         if (item->HasFlag(ITEM_FIELD_FLAGS, ITEM_FIELD_FLAG_BOP_TRADEABLE) && !sTransmogrification->GetAllowTradeable())
             return;
-        // Nathan Handley: Ignore this flag
+        // Eternal Wrath: Ignore this flag
         //if (item->HasFlag(ITEM_FIELD_FLAGS, ITEM_FIELD_FLAG_REFUNDABLE))
         //    return;
         ItemTemplate const* itemTemplate = item->GetTemplate();
@@ -1185,6 +1250,8 @@ public:
             sT->dataMap.erase(it->first);
         sT->entryMap.erase(pGUID);
         sT->selectionCache.erase(pGUID);
+        sT->fakeVendorStartItemCache.erase(pGUID);
+        sT->fakeVendorCurSlotCache.erase(pGUID);
 
 #ifdef PRESETS
         if (sT->GetEnableSets())
@@ -1202,6 +1269,7 @@ public:
             return;
 
         uint8 slot = sT->selectionCache[player->GetGUID()];
+        uint32 fakeVendorStartItemIndex = sT->fakeVendorStartItemCache[player->GetGUID()];
 
         if (itemEntry == CUSTOM_HIDE_ITEM_VENDOR_ID || itemEntry == FALLBACK_HIDE_ITEM_VENDOR_ID)
         {
@@ -1215,7 +1283,10 @@ public:
         {
             PerformTransmogrification(player, itemEntry, 0);
         }
-        npc_transmogrifier::ShowTransmogItemsInFakeVendor(player, vendor, slot); //Refresh menu
+
+        // Eternal Wrath: Determine the starting item ID for refreshing the window
+
+        npc_transmogrifier::ShowTransmogItemsInFakeVendor(player, vendor, slot, fakeVendorStartItemIndex); //Refresh menu
         itemEntry = 0; //Prevents the handler from proceeding to core vendor handling
     }
 };
