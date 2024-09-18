@@ -374,13 +374,22 @@ bool ValidForTransmog (Player* player, Item* target, Item* source, bool hasSearc
     return true;
 }
 
-bool CmpTmog (Item* i1, Item* i2)
+// Nathan Handley: Update name
+bool CompareByQualityAndName (Item* i1, Item* i2)
 {
     const ItemTemplate* i1t = i1->GetTemplate();
     const ItemTemplate* i2t = i2->GetTemplate();
     const int q1 = 7-i1t->Quality;
     const int q2 = 7-i2t->Quality;
     return std::tie(q1, i1t->Name1) < std::tie(q2, i2t->Name1);
+}
+
+// Nathan Handley: Added as default sort
+bool CompareByName(Item* i1, Item* i2)
+{
+    const ItemTemplate* i1t = i1->GetTemplate();
+    const ItemTemplate* i2t = i2->GetTemplate();
+    return i1t->Name1 < i2t->Name1;
 }
 
 std::vector<Item*> GetValidTransmogs (Player* player, Item* target, bool hasSearch, std::string searchTerm)
@@ -425,9 +434,10 @@ std::vector<Item*> GetValidTransmogs (Player* player, Item* target, bool hasSear
         }
     }
 
-    if (sConfigMgr->GetOption<bool>("Transmogrification.EnableSortByQualityAndName", true)) {
-        sort(allowedItems.begin(), allowedItems.end(), CmpTmog);
-    }
+    if (sConfigMgr->GetOption<bool>("Transmogrification.EnableSortByQualityAndName", true))
+        sort(allowedItems.begin(), allowedItems.end(), CompareByQualityAndName);
+    else
+        sort(allowedItems.begin(), allowedItems.end(), CompareByName);
 
     return allowedItems;
 }
