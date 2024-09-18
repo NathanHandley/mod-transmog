@@ -80,7 +80,7 @@
 
 Transmogrification.Enable = 1
 Transmogrification.UseCollectionSystem = 1
-Transmogrification.UseVendorInterface = 0
+Transmogrification.UseVendorInterface = 1
 Transmogrification.AllowHiddenTransmog = 1
 Transmogrification.HiddenTransmogIsFree = 1
 Transmogrification.TrackUnusableItems = 1
@@ -110,7 +110,7 @@ Transmogrification.EnableSortByQualityAndName = 1
 #
 #    For custom gold cost set ScaledCostModifier to 0.0 and CopperCost to what ever cost you want
 
-Transmogrification.ScaledCostModifier = 1.0
+Transmogrification.ScaledCostModifier = 0
 Transmogrification.CopperCost = 0
 
 #
@@ -229,21 +229,21 @@ Transmogrification.TokenAmount = 1
 
 
 Transmogrification.AllowPoor = 0
-Transmogrification.AllowCommon = 0
+Transmogrification.AllowCommon = 1
 Transmogrification.AllowUncommon = 1
 Transmogrification.AllowRare = 1
 Transmogrification.AllowEpic = 1
-Transmogrification.AllowLegendary = 0
-Transmogrification.AllowArtifact = 0
+Transmogrification.AllowLegendary = 1
+Transmogrification.AllowArtifact = 1
 Transmogrification.AllowHeirloom = 1
-Transmogrification.AllowTradeable = 0
+Transmogrification.AllowTradeable = 1
 
-Transmogrification.AllowMixedArmorTypes = 0
-Transmogrification.AllowLowerTiers = 0
-Transmogrification.AllowMixedOffhandArmorTypes = 0
-Transmogrification.AllowMixedWeaponTypes = 0
-Transmogrification.AllowMixedWeaponHandedness = 0
-Transmogrification.AllowFishingPoles = 0
+Transmogrification.AllowMixedArmorTypes = 1
+Transmogrification.AllowLowerTiers = 1
+Transmogrification.AllowMixedOffhandArmorTypes = 1
+Transmogrification.AllowMixedWeaponTypes = 1
+Transmogrification.AllowMixedWeaponHandedness = 1
+Transmogrification.AllowFishingPoles = 1
 
 Transmogrification.IgnoreReqRace = 0
 Transmogrification.IgnoreReqClass = 0
@@ -286,7 +286,7 @@ Transmogrification.MaxSets = 10
 Transmogrification.EnableSetInfo = 1
 Transmogrification.SetNpcText = 601084
 
-Transmogrification.SetCostModifier = 3.0
+Transmogrification.SetCostModifier = 0
 Transmogrification.SetCopperCost = 0
 
 #
