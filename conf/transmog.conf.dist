@@ -75,6 +75,7 @@
 #
 #    Transmogrification.EnableSortByQualityAndName
 #        Description: Enables / Disables the sorting of the items by quality and then by names
+#					  If false, it will only sort by name
 #        Default:    1
 #
 
@@ -95,7 +96,7 @@ Transmogrification.NotAllowed = ""
 
 Transmogrification.EnablePortable = 1
 
-Transmogrification.EnableSortByQualityAndName = 1
+Transmogrification.EnableSortByQualityAndName = 0
 
 #
 #    COPPER COST
@@ -228,7 +229,7 @@ Transmogrification.TokenAmount = 1
 #        Default:    0
 
 
-Transmogrification.AllowPoor = 0
+Transmogrification.AllowPoor = 1
 Transmogrification.AllowCommon = 1
 Transmogrification.AllowUncommon = 1
 Transmogrification.AllowRare = 1
@@ -245,13 +246,13 @@ Transmogrification.AllowMixedWeaponTypes = 1
 Transmogrification.AllowMixedWeaponHandedness = 1
 Transmogrification.AllowFishingPoles = 1
 
-Transmogrification.IgnoreReqRace = 0
-Transmogrification.IgnoreReqClass = 0
-Transmogrification.IgnoreReqSkill = 0
-Transmogrification.IgnoreReqSpell = 0
-Transmogrification.IgnoreReqLevel = 0
-Transmogrification.IgnoreReqEvent = 0
-Transmogrification.IgnoreReqStats = 0
+Transmogrification.IgnoreReqRace = 1
+Transmogrification.IgnoreReqClass = 1
+Transmogrification.IgnoreReqSkill = 1
+Transmogrification.IgnoreReqSpell = 1
+Transmogrification.IgnoreReqLevel = 1
+Transmogrification.IgnoreReqEvent = 1
+Transmogrification.IgnoreReqStats = 1
 
 #
 #    SET FEATURE
